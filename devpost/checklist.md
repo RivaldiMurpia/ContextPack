@@ -1,6 +1,6 @@
 ---
 doc: checklist
-status: draft
+status: approved
 ---
 
 # ContextPack — Build Checklist
@@ -17,7 +17,7 @@ Build mode: learn (guided, one step at a time, verify + commit each slice)
 - [x] **6. Server prompt** — `api/prompt.js` exports the system instructions: extraction/classification rules (never invent, tentative ≠ decided, missing → missing), output seven fixed fields.
 - [x] **7. Server schema** — `api/schema.js` exports Zod schema for the seven-field object and the strict JSON Schema for OpenAI-compatible Chat Completions Structured Outputs. Unchanged by the provider-agnostic revision.
 - [x] **8. Server function** — `api/generate.js` Vercel Node function: validates endpoint/key/model/context, calls provider Chat Completions with caller `baseURL` + key + exact `model`, strict JSON Schema structured output, conditional `reasoning_effort` (omitted on Auto), Zod validates final object, returns `{ pack }` or safe error codes. Never logs endpoint/key/body. Production endpoint security enforced. Maps 401→auth error, 429→rate/quota, 404→model/endpoint not found, reasoning→compatibility error, structured-output→compatibility error, Zod fail→bad output.
-- [ ] **9. Integration + verify (vercel dev)** — provider-agnostic connection (endpoint + key + manual model + Thinking), Try example fills context only, Generate → seven sections render together, copy actions with toasts. Live-tested: endpoint/key/model/thinking validation, Try example, empty/tiny/over-limit guards, full generate with demo input, copy Handoff + copy for AI, refresh clears all, mobile layout. Static-only (not reproduced live): unsupported-reasoning compatibility error, unsupported-structured-output compatibility error. npm build: [record result here].
+- [x] **9. Integration + verify (vercel dev)** — provider-agnostic connection (endpoint + key + manual model + Thinking), Try example fills context only, Generate → seven sections render together, copy actions with toasts. Live-tested: endpoint/key/model/thinking validation, Try example, empty/tiny/over-limit guards, full generate with demo input, copy Handoff + copy for AI, refresh clears all, mobile layout, source grounding (Supabase not linked to pricing, John pricing separate, payment later not post-launch, no Open Questions / Missing Context duplication). Static-only (not reproduced live): unsupported-reasoning compatibility error, unsupported-structured-output compatibility error. npm build: passed, 261ms, 6 modules.
 
 ## Git
 
@@ -25,9 +25,9 @@ Each slice committed after mechanical verification. `.gitignore` already exclude
 
 ## Final Review
 
-- [ ] All acceptance criteria from PRD satisfied
-- [ ] All failure modes from spec handled
-- [ ] Code tour and app map complete
+- [x] All acceptance criteria from PRD satisfied
+- [x] All failure modes from spec handled
+- [x] Code tour and app map complete
 
 ## Revisions
 
@@ -35,5 +35,7 @@ Each slice committed after mechanical verification. `.gitignore` already exclude
 
 ## Code Tour and App Map
 
-(Completed after final review)
-
+- **Activity:** Focused plan-first walkthrough tracing one action (`handleGenerate`) from button click through validation, same-origin fetch, serverless Chat Completions call with strict JSON Schema, Zod validation, and seven-section DOM render.
+- **Evidence:** `src/main.js` (`handleGenerate`, lines 185–240), `api/generate.js` (`handler`, lines 70–150), `devpost/app-map.html`.
+- **Takeaway:** Writing a strict JSON Schema and pairing it with a server-side Zod validator eliminated an entire class of model output bugs before writing a single line of client rendering code. When an interpretation gap was discovered ("John checking Supabase pricing"), tightening the prompt rules under Source Grounding immediately fixed the behavior without touching client or server architecture.
+- **App map:** `devpost/app-map.html` generated (standalone, offline-safe, inline SVG diagram, 3-stop route, change pointers, reusable practice).
