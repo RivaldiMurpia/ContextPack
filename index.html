@@ -14,10 +14,67 @@
         <p class="supporting">Paste scattered notes, decisions, TODOs, and questions. ContextPack will organize what is known, unresolved, missing, and next.</p>
       </header>
 
-      <section id="key-block">
-        <label for="api-key">OpenAI API key</label>
-        <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-..." />
-        <p class="hint">Use your own OpenAI API key. Your key is used only for this request and is not stored.</p>
+      <section id="connection-block">
+        <div class="field">
+          <label for="base-url">API Endpoint</label>
+          <input
+            id="base-url"
+            type="text"
+            placeholder="https://api.openai.com/v1"
+            spellcheck="false"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="field">
+          <label for="api-key">API Key</label>
+          <input
+            id="api-key"
+            type="password"
+            placeholder="API key"
+            spellcheck="false"
+            autocomplete="off"
+          />
+          <p class="hint">Use the API key for your OpenAI-compatible provider. Your connection details are used only for this request and are not stored.</p>
+        </div>
+
+        <div class="field-row">
+          <div class="field field-model">
+            <label for="model-select">Model</label>
+            <div class="model-row">
+              <select id="model-select">
+                <option value="" disabled selected>Add a model first</option>
+              </select>
+              <button id="add-model-btn" type="button" class="btn-secondary">+ Add model</button>
+            </div>
+            <div id="add-model-inline" class="add-model-inline" hidden>
+              <input
+                id="new-model-input"
+                type="text"
+                placeholder="e.g. cx/gpt-5.6-luna(xhigh)"
+                spellcheck="false"
+                autocomplete="off"
+              />
+              <button id="confirm-add-model-btn" type="button">Add</button>
+              <button id="cancel-add-model-btn" type="button" class="btn-subtle">Cancel</button>
+            </div>
+          </div>
+
+          <div class="field field-thinking">
+            <label for="thinking-select">Thinking</label>
+            <select id="thinking-select">
+              <option value="auto" selected>Auto</option>
+              <option value="none">None</option>
+              <option value="minimal">Minimal</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="xhigh">XHigh</option>
+              <option value="max">Max</option>
+              <option value="ultra">Ultra</option>
+            </select>
+          </div>
+        </div>
       </section>
 
       <section id="input-block">
@@ -32,7 +89,7 @@
         </div>
         <div class="actions">
           <button id="generate-btn" type="button">Generate ContextPack</button>
-          <button id="try-example-btn" type="button">Try example</button>
+          <button id="try-example-btn" type="button" class="btn-secondary">Try example</button>
         </div>
         <p id="status-message" role="status" hidden></p>
         <p id="error-message" role="alert" hidden></p>
@@ -43,7 +100,7 @@
           <h2>ContextPack</h2>
           <div class="result-actions">
             <button id="copy-handoff-btn" type="button">Copy Handoff</button>
-            <button id="copy-ai-btn" type="button">Copy for AI</button>
+            <button id="copy-ai-btn" type="button" class="btn-secondary">Copy for AI</button>
           </div>
         </div>
         <div id="sections"></div>

@@ -21,3 +21,4 @@ devpost/learner-profile.md
 
 # Allow secret-free example
 !.env.example
+.vercel

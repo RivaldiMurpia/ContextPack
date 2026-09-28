@@ -10,8 +10,8 @@ Source: `scope.md > The Unique Kernel`, `scope.md > Who It Is For`, `scope.md > 
 
 ## The Core Journey
 
-1. User opens ContextPack and sees the header (name, tagline, supporting sentence) and one large text area with a "Try example" secondary action.
-2. User pastes messy project notes or clicks "Try example" to fill the predefined demo example.
+1. User opens ContextPack and sees the header (name, tagline, supporting sentence), a connection section (API Endpoint, API Key, Model selector with "+ Add model", Thinking selector defaulting to Auto), and one large text area with a "Try example" secondary action.
+2. User enters their provider's API endpoint and API key, adds one or more exact model IDs (each auto-selected on add), optionally sets a Thinking level, and pastes messy project notes or clicks "Try example" to fill the predefined demo example.
 3. User clicks "Generate ContextPack".
 4. Button becomes disabled with label "Analyzing context..."; spinner and status message ("Separating decisions, unresolved questions, and missing context...") appear; input remains visible and intact.
 5. Structured handoff with seven fixed sections appears below the input; page gently scrolls to the result.
@@ -25,7 +25,8 @@ Source: `scope.md > The Unique Kernel`, `scope.md > Who It Is For`, `scope.md > 
 Single page, single surface. No navigation, sidebar, dashboard, account UI, or project list.
 
 - **Header:** ContextPack logo/name, tagline ("Turn messy project context into a handoff anyone can continue."), supporting sentence ("Paste scattered notes, decisions, TODOs, and questions. ContextPack will organize what is known, unresolved, missing, and next.").
-- **Input block:** one large multiline text area with placeholder showing short messy example; character counter near the text area; primary button "Generate ContextPack"; small secondary action "Try example" that fills the input with a predefined demo example.
+- **Connection block:** API Endpoint text input (any OpenAI-compatible base URL); API Key masked input with helper copy ("Use the API key for your OpenAI-compatible provider. Your connection details are used only for this request and are not stored."); Model selector starting empty ("Add a model first") with "+ Add model" inline input for exact model IDs (trimmed, empty rejected, exact duplicates rejected, auto-selects on add); Thinking selector defaulting to Auto (options: Auto, None, Minimal, Low, Medium, High, XHigh, Max, Ultra). All connection state lives in page memory only; refresh clears endpoint, key, model list, thinking, context, and result.
+- **Input block:** one large multiline text area with placeholder showing short messy example; character counter near the text area; primary button "Generate ContextPack"; small secondary action "Try example" that fills only the project context textarea (never touches endpoint, key, or model; never triggers generation; never clears an existing result).
 - **Result block:** appears below the input after successful generation. Heading near top with "Copy Handoff" (primary) and "Copy for AI" (secondary) actions aligned nearby. Seven sections in fixed order: 1. Goal, 2. Current State, 3. Key Decisions, 4. Constraints, 5. Open Questions, 6. Missing Context, 7. Next Actions. Each section renders even when empty, with explicit text like "No clear constraints found." or "No critical missing context detected."
 
 ## Look and Feel
@@ -48,18 +49,17 @@ Clean, focused, utility-first, slightly technical — a trustworthy workspace fo
 - Placeholder shows a short messy example (e.g. "landing page done / need auth / maybe supabase? / deploy friday...").
 - "Try example" secondary action fills the input with a predefined demo example for easy testing and demonstration.
 - Primary button "Generate ContextPack" sends raw context to AI and returns one structured handoff.
-- One input → one generated handoff at a time. No multi-project workspace, saved history, or collection.
-
-  - [ ] Paste notes, click Generate, structured handoff with all seven fixed sections appears below input
-  - [ ] "Try example" fills input with predefined demo example
-  - [ ] Generating a new handoff replaces the previous result only on success
-
+- Connection: provider-agnostic BYOK. Base URL requires a syntactically valid `http:`/`https:` URL (client-side); endpoint security (HTTPS-only, no loopback/private/embedded-credentials) is enforced server-side in production. API key is required (non-empty, plausible length). Model must be added and selected before generation. Thinking defaults to Auto; Auto omits the provider-side reasoning parameter, any other value is passed through as `reasoningEffort`. No model discovery, metadata, pricing, routing, fallback, favorites, OAuth, capability detection, or persistence.
+  - [ ] Generate without a selected model shows "Select a model."
+  - [ ] Empty/duplicate model IDs are rejected
+  - [ ] Refresh clears endpoint, key, model list, thinking, context, and result
 ### Structured output
 
 - Output always uses seven fixed sections in fixed order: Goal, Current State, Key Decisions, Constraints, Open Questions, Missing Context, Next Actions. No custom templates or configurable structure.
 - All seven sections appear together once the AI response is complete (no progressive streaming).
 - Known vs unresolved vs missing distinction is the core behavior. Tentative language ("maybe Supabase") must not appear as a confirmed decision.
-- Missing-context detection explicitly flags ambiguity or incomplete information (e.g. "deploy friday" missing exact date; missing deployment platform) rather than inventing an answer. Never invent content to fill a section.
+- Missing-context detection explicitly flags ambiguity or incomplete information only when the notes themselves indicate it is necessary (e.g. "deploy friday" missing exact date) rather than inventing an answer or generating a generic checklist. Never invent content to fill a section.
+- Source grounding: every statement must be traceable to the input. Do not connect separate notes unless the relationship is explicitly stated or unambiguously supported (e.g. never link "John checking pricing" to "maybe Supabase?" unless the input says so). Prefer narrower, directly supported wording over specific interpretation. Open Questions and Missing Context must not duplicate the same issue: undecided/tentative/deferred/awaiting-input goes to Open Questions; absent-or-incomplete information goes to Missing Context. Time/sequence claims must be grounded in the input (e.g. "payment later" stays deferred, never "post-launch", unless stated).
 - Each section renders even when empty, with explicit text such as "No clear constraints found." or "No critical missing context detected."
 
   - [ ] Seven sections appear together in fixed order after generation
@@ -88,7 +88,8 @@ Clean, focused, utility-first, slightly technical — a trustworthy workspace fo
 - **Success** — full structured handoff renders below input; page gently scrolls to result. New successful generation replaces previous result.
 - **Generation failure** — original input preserved exactly; previous valid result (if any) kept. Inline error near Generate: "We couldn''t generate your ContextPack. Your notes are safe — try again." with "Try again" action. No raw API errors exposed.
 - **Malformed AI response** — treated as generation failure; no partially broken ContextPack displayed. Response validated for expected structure before rendering. Message: "ContextPack couldn''t structure this response correctly. Please try again." No automatic retry.
-- **Persistence** — none. Refresh resets input and output. No local storage, saved history, or server persistence. Failed attempts never lose pasted input.
+- **Compatibility failures** — unsupported reasoning level, unsupported strict JSON Schema / Structured Outputs, or unknown model/endpoint all return a friendly error and render nothing. No silent fallback, no partial render.
+- **Persistence** — none. Refresh resets endpoint, API key, model list, selected model, thinking level, input, and output. No localStorage, cookies, saved history, or server persistence. Failed attempts never lose pasted input.
 
 ## Product Decisions
 
@@ -99,14 +100,17 @@ Clean, focused, utility-first, slightly technical — a trustworthy workspace fo
 - Never invent missing information — trustworthiness over complete-looking output; unknown stays unresolved or missing.
 - Copy actions operate on whole handoff — product is about transferring complete context; per-section copy adds unneeded complexity.
 - Two copy modes (clean Markdown / Markdown + instruction header) — cover the two destinations (human/workspace, AI agent) without integrations.
-- No persistence across refresh — saved projects, accounts, history, storage are outside the core experiment.
+- Provider-agnostic BYOK with manual model add/select and Thinking selector — lets the POC work against any OpenAI-compatible endpoint without building a provider manager. No discovery, routing, fallback, or saved connections.
+- OpenAI-compatible Chat Completions with strict JSON Schema + server Zod — schema enforcement plus independent validation of the final object.
+- No persistence across refresh — endpoint, key, models, thinking, projects, accounts, history, storage are outside the core experiment.
+- Strengthened grounding (source traceability, conservative inference, Open Questions vs Missing Context dedup, time/sequence grounding) — protects the known/unresolved/missing distinction that is the product kernel.
 - Explicit validation + character limit, no silent truncation — silently removing context could make the handoff unreliable.
 - UI feels like focused developer utility / clean document editor, not chatbot or marketing site — the structured handoff is the visual focus.
 
 ## What We''re Building
 
 - Single-page app: header, large text area with placeholder + counter, Generate button, Try example action.
-- AI generation producing seven fixed structured sections with known/unresolved/missing distinction and explicit missing-context detection.
+- AI generation via caller-supplied OpenAI-compatible endpoint, exact model ID, and optional thinking level, producing seven fixed structured sections with known/unresolved/missing distinction, source grounding, conservative inference, and explicit missing-context detection.
 - Result rendering with visual hierarchy (Goal prominent, Missing Context most distinctive, Next Actions last and actionable); empty sections show explicit "none found" text.
 - Copy Handoff (Markdown) and Copy for AI (header + Markdown) with toast confirmation and clipboard-failure handling.
 - Loading, empty, tiny-input, over-limit, failure, and malformed-response states as defined above; input never lost on failure; no persistence.
@@ -126,4 +130,4 @@ Per `scope.md > CUT`: full project management (task boards, Kanban), chat applic
 
 ## Open Questions
 
-None blocking. Technical decisions intentionally deferred to `4-spec`: AI provider/model, structured-response enforcement and validation, application framework and API architecture, deployment approach.
+None blocking. Backend is OpenAI-compatible Chat Completions with strict JSON Schema + Zod. Model is caller-supplied; Thinking=Auto omits the reasoning parameter. Endpoint security enforced server-side in production.
