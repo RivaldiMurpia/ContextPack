@@ -1,7 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Local npm cache
+.npm-cache/
+
+# Agent skill installations
+.agents/
+.claude/
+agent/
+
 # Learner profile (personal context, not code)
 devpost/learner-profile.md
-# Local env (credentials stay out of commits)
+
+# Local env
 .env
 .env.*
+
 # Allow secret-free example
 !.env.example
