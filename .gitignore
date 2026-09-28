@@ -1,0 +1,7 @@
+# Learner profile (personal context, not code)
+devpost/learner-profile.md
+# Local env (credentials stay out of commits)
+.env
+.env.*
+# Allow secret-free example
+!.env.example

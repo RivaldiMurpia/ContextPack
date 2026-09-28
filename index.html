@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ContextPack</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>ContextPack</h1>
+        <p class="tagline">Turn messy project context into a handoff anyone can continue.</p>
+        <p class="supporting">Paste scattered notes, decisions, TODOs, and questions. ContextPack will organize what is known, unresolved, missing, and next.</p>
+      </header>
+
+      <section id="key-block">
+        <label for="api-key">OpenAI API key</label>
+        <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-..." />
+        <p class="hint">Use your own OpenAI API key. Your key is used only for this request and is not stored.</p>
+      </section>
+
+      <section id="input-block">
+        <label for="context-input">Project context</label>
+        <textarea
+          id="context-input"
+          rows="12"
+          placeholder="landing page done&#10;need auth&#10;maybe supabase?&#10;deploy friday..."
+        ></textarea>
+        <div class="input-meta">
+          <span id="char-count">0 / 12000</span>
+        </div>
+        <div class="actions">
+          <button id="generate-btn" type="button">Generate ContextPack</button>
+          <button id="try-example-btn" type="button">Try example</button>
+        </div>
+        <p id="status-message" role="status" hidden></p>
+        <p id="error-message" role="alert" hidden></p>
+      </section>
+
+      <section id="result-block" hidden>
+        <div class="result-header">
+          <h2>ContextPack</h2>
+          <div class="result-actions">
+            <button id="copy-handoff-btn" type="button">Copy Handoff</button>
+            <button id="copy-ai-btn" type="button">Copy for AI</button>
+          </div>
+        </div>
+        <div id="sections"></div>
+      </section>
+
+      <div id="toast" role="status" aria-live="polite" hidden></div>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
